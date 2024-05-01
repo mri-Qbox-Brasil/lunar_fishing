@@ -29,9 +29,9 @@ Config.fish = {
 
 ---@type FishingRod[]
 Config.fishingRods = {
-    { name = 'basic_rod', price = 1000, minLevel = 1, breakChance = 20 },
+    { name = 'basic_rod', price = 1000, minLevel = 0, breakChance = 20 },
     { name = 'graphite_rod', price = 2500, minLevel = 2, breakChance = 10 },
-    { name = 'titanium_rod', price = 5000, minLevel = 3, breakChance = 1 },
+    { name = 'titanium_rod', price = 5000, minLevel = 4, breakChance = 1 },
 }
 
 ---@class FishingBait
@@ -42,7 +42,7 @@ Config.fishingRods = {
 
 ---@type FishingBait[]
 Config.baits = {
-    { name = 'worms', price = 5, minLevel = 1, waitDivisor = 1.0 },
+    { name = 'worms', price = 5, minLevel = 0, waitDivisor = 1.0 },
     { name = 'artificial_bait', price = 50, minLevel = 2, waitDivisor = 3.0 },
 }
 
@@ -73,7 +73,7 @@ Config.fishingZones = {
         minLevel = 1,
         waitTime = { min = 5, max = 10 },
         includeOutside = true,
-        message = { enter = 'You have entered a coral reef.', exit = 'You have left the coral reef.' },
+        message = { enter = 'Você entrou em um recife de coral.', exit = 'Você deixou o recife de coral.' },
         fishList = { 'mahi_mahi', 'red_snapper' }
     },
     {
@@ -90,7 +90,7 @@ Config.fishingZones = {
         minLevel = 3,
         waitTime = { min = 20, max = 40 },
         includeOutside = false,
-        message = { enter = 'You have entered deep waters.', exit = 'You have left deep waters.' },
+        message = { enter = 'Você entrou em águas profundas.', exit = 'Você deixou águas profundas.' },
         fishList = { 'grouper', 'tuna', 'shark' }
     },
     {
@@ -107,7 +107,7 @@ Config.fishingZones = {
         minLevel = 2,
         waitTime = { min = 10, max = 20 },
         includeOutside = true,
-        message = { enter = 'You have entered a swamp.', exit = 'You have left the swamp.' },
+        message = { enter = 'Você entrou em um pântano.', exit = 'Você deixou o pântano.' },
         fishList = { 'piranha' }
     },
 }
