@@ -104,7 +104,9 @@ for _, rod in ipairs(Config.fishingRods) do
 
         if success then
             player:addItem(fishName, 1)
-            AddPlayerLevel(player, Config.progressPerCatch)
+            -- AddPlayerLevel(player, Config.progressPerCatch)
+            exports["cw-rep"]:updateSkill(source, 'fishing', Config.progressPerCatch)
+            print("Log:", source, player, Config.progressPerCatch)
             Utils.logToDiscord(source, player, ('Caught a %s.'):format(Utils.getItemLabel(fishName)))
         elseif math.random(100) <= rod.breakChance then
             player:removeItem(rod.name, 1)

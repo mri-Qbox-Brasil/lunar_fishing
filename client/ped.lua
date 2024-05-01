@@ -154,16 +154,20 @@ end
 
 local function open()
     local level, progress = GetCurrentLevel(), GetCurrentLevelProgress() * 100
-
+    local xp = exports["cw-rep"]:getCurrentSkill('fishing')
+    local level = exports["cw-rep"]:getCurrentLevel('fishing')
+    
+    print('You are level ', level, ' in fishing. Your XP is', xp)
+    
     lib.registerContext({
         id = 'fisherman',
         title = locale('fisherman'),
         options = {
             {
                 title = locale('level', level),
-                description = locale('level_desc', math.floor(100 - progress)),
+                description = locale('level_desc', (100*(level+1))-xp),
                 icon = 'chart-simple',
-                progress = math.max(progress, 0.01),
+                progress = xp-(100*level),
                 colorScheme = 'lime'
             },
             {
