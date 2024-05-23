@@ -126,12 +126,12 @@ Config.ped = {
     model = `s_m_m_cntrybar_01`,
     buyAccount = 'money',
     sellAccount = 'money',
-    blip = {
-        name = 'SeaTrade Corporation',
-        sprite = 356,
-        color = 74,
-        scale = 0.75
-    },
+    -- blip = {
+    --     name = 'SeaTrade Corporation',
+    --     sprite = 356,
+    --     color = 74,
+    --     scale = 0.75
+    -- },
 
     ---@type vector4[]
     locations = {
