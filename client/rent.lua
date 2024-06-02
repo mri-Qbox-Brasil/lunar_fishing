@@ -144,7 +144,7 @@ end
 
 
 for _, location in ipairs(Config.renting.locations) do
-    Utils.createPed(location.coords, Config.renting.model, {
+    Utils.createPed(location.coords, Config.renting, {
         {
             label = locale('rent_boat'),
             icon = 'ship',

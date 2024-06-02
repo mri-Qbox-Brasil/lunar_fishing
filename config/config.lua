@@ -123,7 +123,6 @@ Config.outside = {
 }
 
 Config.ped = {
-    model = `s_m_m_cntrybar_01`,
     buyAccount = 'money',
     sellAccount = 'money',
     -- blip = {
@@ -133,6 +132,13 @@ Config.ped = {
     --     scale = 0.75
     -- },
 
+    -- TALK NPCS
+    model = 's_m_m_cntrybar_01',
+    name = 'João',
+    tag = 'PESCADOR',
+    startMSG = 'Vamos pescar?',
+    message = "👋 Olá, me chamo 😃**João Luiz**, mas pode me chamar de **Tarzan da Pescaria**.  \nVou te explicar como 🎣 pescar.  \nPara isso, você vai precisar de uma 🪝 vara de pesca e isca de pesca. Depois, você pode ir até um lago ou ao mar e começar a pescar usando a vara de pesca. 🌊  \nLembrando que quanto mais experiência você adquirir, poderá pescar em áreas específicas, pegando peixes melhores e podendo comprar varas de pesca melhores para essa pescaria.  \nEntão, agora que você já sabe como faz, boa pescaria para você! 🎣🐟",
+
     ---@type vector4[]
     locations = {
         vector4(-2081.3831, 2614.3223, 3.0840, 112.7910),
@@ -141,7 +147,7 @@ Config.ped = {
 }
 
 Config.renting = {
-    model = `s_m_m_dockwork_01`, -- The ped model
+    model = 's_m_m_dockwork_01', -- The ped model
     account = 'money',
     boats = {
         { model = `speeder`, price = 500, image = 'https://i.postimg.cc/mDSqWj4P/164px-Speeder.webp' },
@@ -149,13 +155,21 @@ Config.renting = {
         { model = `tug`, price = 1250, image = 'https://i.postimg.cc/jq7vpKHG/164px-Tug.webp' }
     },
     blip = {
-        name = 'Boat Rental',
+        name = 'Aluguel de Barcos',
         sprite = 410,
         color = 74,
         scale = 0.75
     },
     returnDivider = 5, -- Players can return it and get some cash back
     returnRadius = 30.0, -- The save radius
+
+    -- TALK NPCS
+    model = 's_m_m_dockwork_01',
+    name = 'Trakinas',
+    tag = 'PESCADOR APOSENTADO',
+    startMSG = 'Tá precisando de um barco?',
+    message = "👋 Olá, me chamo 😃**Alessandro Azevedo**, mas pode me chamar de **Trakinas**.  \nAqui você pode alugar barcos para pescar. Vai querer algum?",
+
 
     ---@type { coords: vector4, spawn: vector4 }[]
     locations = {

@@ -196,10 +196,10 @@ local function open()
 end
 
 for _, coords in ipairs(Config.ped.locations) do
-    Utils.createPed(coords, Config.ped.model, {
+    Utils.createPed(coords, Config.ped, {
         {
             label = locale('open_fisherman'),
-            icon = 'comment',
+            icon = 'fish',
             onSelect = open
         }
     })

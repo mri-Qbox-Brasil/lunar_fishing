@@ -2,7 +2,7 @@ function ShowNotification(message, notifyType)
     lib.notify({
         description = message,
         type = notifyType,
-        position = 'left-center'
+        position = 'center-left'
     })
 end
 

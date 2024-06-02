@@ -30,11 +30,11 @@ local scenarios = {
 
 local count = 0
 
-function Utils.createPed(coords, model, options)
-    if not IsModelValid(model) then
-        error('Invalid ped model: %s', model)
+function Utils.createPed(coords, configPed, options)
+    if not IsModelValid(configPed.model) then
+        error('Invalid ped model: %s', configPed.model)
     end
-
+    print(coords, configPed.model, options)
     -- Convert action to qtarget
     if options then
         for _, option in pairs(options) do
@@ -57,12 +57,54 @@ function Utils.createPed(coords, model, options)
     end
 
     local ped, id
+    QBCore = exports['qb-core']:GetCoreObject()
+    Player = QBCore.Functions.GetPlayerData()
+    playerName = Player.charinfo.firstname
     lib.points.new({
         coords = coords.xyz,
         distance = 100.0,
         onEnter = function()
-            lib.requestModel(model)
-            ped = CreatePed(4, model, coords.x, coords.y, coords.z - 1.0, coords.w, false, true)
+            lib.requestModel(configPed.model)
+            -- ped = CreatePed(4, model, coords.x, coords.y, coords.z - 1.0, coords.w, false, true)
+            ped = exports['rep-talkNPC']:CreateNPC({
+                npc = configPed.model,
+                coords = vec3(coords.x, coords.y, coords.z - 1.0),
+                heading = coords.w,
+                name = configPed.name,
+                tag = configPed.tag,
+                animScenario = 'WORLD_HUMAN_CLIPBOARD',
+                color = "green",
+                startMSG = configPed.startMSG,
+            }, {
+                [1] = {
+                    label = "Olá, me chamo "..playerName.. "😊",
+                    shouldClose = false,
+                    action = function()
+                        exports['rep-talkNPC']:changeDialog( configPed.message, 
+                            {
+                                [1] = {
+                                    label = "Entendi!",
+                                    shouldClose = true,
+                                    action = function()
+                                    end
+                                },
+                                [2] = {
+                                    label = "Ah sim... Tenho que fazer outra coisa.",
+                                    shouldClose = true,
+                                    action = function()
+                                    end
+                                }
+                            })
+                    end
+                },
+                [2] = {
+                    label = "Talvez outra hora...",
+                    shouldClose = true,
+                    action = function()
+                    end
+                }
+            })
+
             SetEntityInvincible(ped, true)
             FreezeEntityPosition(ped, true)
             SetBlockingOfNonTemporaryEvents(ped, true)
