@@ -195,13 +195,19 @@ local function open()
     lib.showContext('fisherman')
 end
 
-for _, coords in ipairs(Config.ped.locations) do
-    Utils.createPed(coords, Config.ped, {
-        {
-            label = locale('open_fisherman'),
-            icon = 'fish',
-            onSelect = open
-        }
-    })
-    Utils.createBlip(coords, Config.ped.blip)
+local function createPeds()
+    for _, coords in ipairs(Config.ped.locations) do
+        Utils.createPed(coords, Config.ped, {
+            {
+                label = locale('open_fisherman'),
+                icon = 'fish',
+                onSelect = open
+            }
+        })
+        Utils.createBlip(coords, Config.ped.blip)
+    end
 end
+
+AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
+    createPeds()
+end)
