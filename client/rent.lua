@@ -142,17 +142,19 @@ local function createSaveZone(coords)
     })
 end
 
-
-for _, location in ipairs(Config.renting.locations) do
-    Utils.createPed(location.coords, Config.renting, {
-        {
-            label = locale('rent_boat'),
-            icon = 'ship',
-            onSelect = function()
-                lib.showContext('rent_boat')
-            end
-        }
-    })
-    Utils.createBlip(location.coords, Config.renting.blip)
-    createSaveZone(location.spawn)
-end
+-- Register events
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
+    for _, location in ipairs(Config.renting.locations) do
+        Utils.createPed(location.coords, Config.renting, {
+            {
+                label = locale('rent_boat'),
+                icon = 'ship',
+                onSelect = function()
+                    lib.showContext('rent_boat')
+                end
+            }
+        })
+        Utils.createBlip(location.coords, Config.renting.blip)
+        createSaveZone(location.spawn)
+    end
+end)
