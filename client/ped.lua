@@ -211,3 +211,9 @@ end
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
     createPeds()
 end)
+
+AddEventHandler('onResourceStart', function(resource)
+   if resource == GetCurrentResourceName() then
+       createPeds()
+   end
+end)
