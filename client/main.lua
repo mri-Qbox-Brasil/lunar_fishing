@@ -161,10 +161,10 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
 
         TaskPlayAnim(cache.ped, 'amb@world_human_stand_fishing@idle_a', 'idle_c', 3.0, 3.0, -1, 11, 0, false, false, false)
 
-        if not wait(math.random(zone.waitTime.min, zone.waitTime.max) / bait.waitDivisor * 1000) then return end
+        -- if not wait(math.random(zone.waitTime.min, zone.waitTime.max) / bait.waitDivisor * 1000) then return end
 
         ShowNotification(locale('felt_bite'), 'warn')
-        -- HideUI()
+        HideUI()
 
         if interval then
             ClearInterval(interval)
@@ -174,15 +174,28 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
         if not wait(math.random(2000, 4000)) then return end
 
         SetMouseCursorVisibleInMenus(false)
-        SetNuiFocus(true, true)
+        
         SendNUIMessage({
             action = 'startMinigame'
         })
-       
+        SetNuiFocus(true, true)
+
+
+            RegisterNUICallback('minigameResult', function(data, cb)
+        if p.state == 0 then  -- Só resolve se ainda não foi resolvida
+            p:resolve(data.success)
+    ShowNotification('Pescaria concluída com sucesso.', 'success')
+
+        end
+        cb('ok')
+    end)
+        
+
         CreateThread(function()
-            Wait(5000)  -- Espera 5 segundos, mudar pra 30
+            Wait(8000)  -- Espera 5 segundos, mudar pra 30
             if p.state == 0 then
                 p:resolve(false)  -- Se o minigame não terminar em 30 segundos, falha
+                ShowNotification(locale('catch_failed'), 'error')
             end
         end)
             local success = Citizen.Await(p)
@@ -201,7 +214,12 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
             setCanRagdoll(true)
             SetNuiFocus(false, false)
 
+            
+           
             return success
+
+            
+
         -- RegisterNUICallback('minigameResult', function(data, cb)
         --     cb('ok')
         --     SendNUIMessage({
@@ -218,11 +236,6 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
   
     
     -- local success = Citizen.Await(p)
-    -- RegisterNUICallback('minigameResult', function(data, cb)
-    --     if p.state == 0 then  -- Só resolve se ainda não foi resolvida
-    --         p:resolve(data.success)
-    --     end
-    --     cb('ok')
-    -- end)
+
     return Citizen.Await(p)
 end)

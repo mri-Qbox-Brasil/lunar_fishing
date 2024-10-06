@@ -139,6 +139,8 @@ body {
   width: 36px;
   height: 350px;
   position: relative;
+
+
 }
 
 .seafloor {
@@ -161,8 +163,6 @@ body {
   position: absolute;
   bottom: 4%;
   left: 2.7%;
-  /* background: red;
-  opacity: 0.5; */
 }
 
 .fish {
@@ -176,17 +176,19 @@ body {
 }
 
 .indicator {
-  width: 34px;
-  height: auto;
+  /* width: 34px; */
+  height: 25%;
   position: absolute;
-  top: calc(100% - 46px);
+  top: calc(100% - 25%);
   left: 3%;
   opacity: 0.8;
   z-index: 30;
+  /* background-color: rgba(255, 255, 255, 0.863); */
 }
 
 .glass {
   z-index: 20;
+
 }
 
 /* ------------ */
@@ -224,7 +226,7 @@ body {
 /* Success */
 /* ------- */
 
-.success {
+/* .success {
   width: 200px;
   position: absolute;
   top: 50%;
@@ -233,7 +235,7 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
-  z-index: 100;
+  z-index: 25;
   opacity: 0;
   display: none;
   cursor: pointer;
@@ -251,4 +253,4 @@ body {
   transform-origin: top;
   position: relative;
   z-index: 10;
-}
+} */

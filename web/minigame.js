@@ -1,329 +1,368 @@
 let gameActive = false;
 let gameOver = false;
+let seaweedData = null;
+let reelLineData = null;
+let bubblesData = null;
 
+window.addEventListener("mousedown", indicatorActive);
+window.addEventListener("mouseup", indicatorInactive);
+window.addEventListener("keydown", indicatorActive);
+window.addEventListener("keyup", indicatorInactive);
+window.addEventListener("touchstart", indicatorActive);
+window.addEventListener("touchend", indicatorInactive);
 
+function indicatorActive() {
+  if (!keyPressed) {
+    keyPressed = true;
+    document.body.classList.add("indicator-active");
+  }
+}
+
+function indicatorInactive() {
+  if (keyPressed) {
+    keyPressed = false;
+    document.body.classList.remove("indicator-active");
+  }
+}
 // ----
 // Iniciar minigame através do evento NUI
 // ----
 
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   if (event.data.action === "hide") {
-      document.querySelector("body").style.display = "none";
-      document.body.style.cursor = "default";
+    document.querySelector("body").style.display = "none";
+    document.body.style.cursor = "default";
   }
 
-  if (event.data.action === 'startMinigame') {
-      startMiniGame();  // Inicia o jogo
+  if (event.data.action === "startMinigame") {
+    startMiniGame();
   }
 });
-
-
-function startMiniGame() {
-  gameActive = true;
-  gameOver = false;
-  document.querySelector('body').style.display = 'flex';
-  document.body.style.cursor = 'none';  // Esconde o cursor
-
-  // Inicia a animação do jogo e o loop de atualização
-  animationLoop();  
-
-  const timer = setTimeout(async () => {
-    if (!gameOver) {
-        gameOver = true;
-        await endMinigame(false);  // Falha se passar dos 30 segundos
-    }
-}, 5000);  //  TODO 5 segundos mudar para 30
-
-// Simula o minigame, o qual pode terminar antes dos 30 segundos
-setTimeout(async () => {
-    const minigameSuccess = detectGameEnd()
-
-    if (minigameSuccess) {
-        clearTimeout(timer);  // Cancela o timer de 30 segundos se o jogo terminar antes
-        await endMinigame(minigameSuccess);
-    }
-}, 5000);  // Minigame simulado dura 5 segundos
-}
-
-async function endMinigame(minigameSuccess) {
-  resetGame();
-  document.querySelector('body').style.display = 'none';
-  document.body.style.cursor = 'default';
-
-  await fetchNui("minigameResult", {
-      success: minigameSuccess
-  });
-}
 
 // ----
 // Loop de animação principal
 // ----
 function animationLoop() {
-  if (!gameActive) return;  // Se o jogo não estiver ativo, não faz nada
+  if (!gameActive && gameOver) return;
 
-  indicator.updatePosition();  // Atualiza a posição do indicator
-  indicator.detectCollision();  // Verifica colisões
-  progressBar.updateUi();  // Atualiza a barra de progresso
-  progressBar.detectGameEnd();  // Verifica se o jogo terminou
-  fish.updateFishPosition();  // Atualiza a posição do peixe
+  indicator.updatePosition();
+  fish.updateFishPosition();
+  progressBar.updateUi();
+  progressBar.detectGameEnd();
+  indicator.detectCollision(fish);
 
-  if (gameActive) {
-      requestAnimationFrame(animationLoop);  // Continua o loop de animação se o jogo não terminou
+
+
+
+  if (bubblesData) {
+    bubblesData.clearCanvas();
+    Object.keys(bubblesData.bubbles).forEach((bubble) =>
+      bubblesData.bubbles[bubble].draw()
+    );
   }
+  if (reelLineData) {
+    reelLineData.clearCanvas();
+    reelLineData.line.draw();
+    reelLineData.line.animate();
+  }
+
+  if (seaweedData) {
+    seaweedData.clearCanvas();
+    seaweedData.seaweed.forEach((seaweed) => seaweed.draw());
+  }
+
+  requestAnimationFrame(animationLoop);
 }
 
-  // ---------
+async function startMiniGame() {
+  gameActive = true;
+  gameOver = false;
+
+  document.querySelector("body").style.display = "flex";
+  document.body.style.cursor = "none";
+
+  seaweedData = initSeaweed();
+  reelLineData = initReelLineTension();
+  bubblesData = initBubbles();
+  animationLoop();
+
+  const timer = setTimeout(async () => {
+    if (!gameOver) {
+      gameOver = true;
+      await endMinigame();
+    }
+  }, 8000); //  TODO 5 segundos mudar para 30
+
+  // Simula o minigame, o qual pode terminar antes dos 30 segundos
+  setTimeout(async () => {
+    const minigameSuccess = progressBar.detectGameEnd();
+
+    if (minigameSuccess) {
+      clearTimeout(timer);
+      await endMinigame(minigameSuccess);
+    }
+  }, 8000); // Minigame simulado dura 5 segundos
+}
+
+function endMinigame() {
+  resetGame();
+  document.querySelector("body").style.display = "none";
+  document.body.style.cursor = "default";
+}
+
+// ---------
 // Indicator
 // ---------
 class Indicator {
   constructor() {
-      this.indicator = document.querySelector(".indicator");
-      this.height = this.indicator.clientHeight;
-      this.y = 0;
-      this.velocity = 0;
-      this.acceleration = 0;
-      this.topBounds = gameBody.clientHeight * -1 + 48;
-      this.bottomBounds = 0;
+    this.indicator = document.querySelector(".indicator");
+    this.height = this.indicator.clientHeight;
+    this.y = 0;
+    this.velocity = 0;
+    this.acceleration = 0;
+    this.calculateBounds();
   }
 
   applyForce(force) {
-      this.acceleration += force;
+    this.acceleration += force;
   }
 
+  calculateBounds() {
+    this.topBounds = (gameBody.clientHeight * -1) + 48;
+    this.bottomBounds = 0;
+  }
   updatePosition() {
-      if (!gameActive) return;
+    if (!gameActive) return;
 
-      this.velocity += this.acceleration;
-      this.y += this.velocity;
+    this.calculateBounds();
 
-      this.acceleration = 0;
+    this.velocity += this.acceleration;
+    this.y += this.velocity;
+    this.acceleration = 0;
 
-      // Mudança de direção e fricção
-      if (this.y > this.bottomBounds) {
-          this.y = 0;
-          this.velocity *= 0.5;
-          this.velocity *= -1;
+    // // Mudança de direção e fricção
+    if (this.y > this.bottomBounds) {
+      this.y = this.bottomBounds;
+      this.velocity *= 0.5;
+      // this.velocity *= -1;
+    }
+
+    // // Limite superior
+    if (this.y < this.topBounds) {
+      this.y = this.topBounds;
+      this.velocity = 0;
+    } else {
+      if (keyPressed) {
+        this.applyForce(-0.5);
       }
+    }
 
-      // Limite superior
-      if (this.y < this.topBounds) {
-          this.y = this.topBounds;
-          this.velocity = 0;
-      } else if (keyPressed) {
-          this.applyForce(-0.5);
-      }
+    // Aplica uma força constante (gravidade)
+    this.applyForce(0.3);
 
-      // Aplica uma força constante
-      this.applyForce(0.3);
+    // // Atualiza a posição do indicator na tela
+    this.indicator.style.transform = `translateY(${this.y}px)`;
 
-      // Atualiza a posição do indicator na tela
-      this.indicator.style.transform = `translateY(${this.y}px)`;
+    // using top property
+    // this.indicator.style.top = `${this.y}px`;  // Use top em vez de transform
   }
 
-  detectCollision() {
-      if (!gameActive) return;  // Verifica colisões apenas se o jogo estiver ativo
+  detectCollision(fish) {
+    const indicatorRect = this.indicator.getBoundingClientRect();
+    const fishRect = fish.fish.getBoundingClientRect();
+  
+    if (
+      indicatorRect.bottom >= fishRect.top &&
+      indicatorRect.top <= fishRect.bottom
+    ) {
+      // console.log("Collision detected, filling!");
+      progressBar.fill();
+      document.body.classList.add("collision");
+    } else {
+      // Sem colisão
+      progressBar.drain();
+      document.body.classList.remove("collision");
+    }
+  }
+  
 
-      if (
-          (fish.y < this.y && fish.y > this.y - this.height) ||
-          (fish.y - fish.height < this.y && fish.y - fish.height > this.y - this.height)
-      ) {
-          progressBar.fill();
-          document.body.classList.add("collision");
-      } else {
-          progressBar.drain();
-          document.body.classList.remove("collision");
-      }
+}
+
+// ----
+// Fish
+// ----
+
+class Fish {
+  constructor() {
+    this.fish = document.querySelector('.fish');
+    this.height = this.fish.clientHeight;
+    this.y = 5;
+    this.direction = null;
+    this.randomPosition = null;
+    this.randomCountdown = null;
+    this.speed = 2;
+  }
+
+  resetPosition() {
+    this.y = 5;
+  }
+
+  updateFishPosition() {
+    if (!gameActive) return;
+
+    if (!this.randomPosition || this.randomCountdown < 0) {
+      this.randomPosition =
+        Math.ceil(Math.random() * (gameBody.clientHeight - this.height)) * -1;
+      this.randomCountdown = Math.abs(this.y - this.randomPosition);
+      this.speed = Math.abs(Math.random() * (1 - 1) + 1);
+    }
+
+    if (this.randomPosition < this.y) {
+      this.y -= this.speed;
+    } else {
+      this.y += this.speed;
+    }
+
+    this.fish.style.transform = `translateY(${this.y}px)`;
+    this.randomCountdown -= this.speed;
   }
 }
 
-  // ----
-  // Fish
-  // ----
+// ------------
+// Progress bar
+// ------------
 
-  class Fish {
-    constructor() {
-      this.fish = document.querySelector(".fish");
-      this.height = this.fish.clientHeight;
-      this.y = 5;
-      this.direction = null;
-      this.randomPosition = null;
-      this.randomCountdown = null;
-      this.speed = 0;
-    }
+class ProgressBar {
+  constructor() {
+    this.wrapper = document.querySelector(".progress-bar");
+    this.progressBar = this.wrapper.querySelector(".progress-gradient-wrapper");
+    this.progress = 50;
+  }
 
-    resetPosition() {
-      this.y = 5;
-    }
+  reset() {
+    this.progress = 50;
+  }
 
-    updateFishPosition() {
+  drain() {
+    if (this.progress > 0) this.progress -= 0.4;
+    if (this.progress < 1) this.progress = 0;
+  }
 
-      if (!gameActive) return
+  fill() {
+    if (this.progress < 100) this.progress += 0.9; // padrão 0.3
+  }
 
-      if (!this.randomPosition || this.randomCountdown < 0) {
-        this.randomPosition =
-          Math.ceil(Math.random() * (gameBody.clientHeight - this.height)) * -1;
-        this.randomCountdown = Math.abs(this.y - this.randomPosition);
-        this.speed = Math.abs(Math.random() * (0 - 1) + 1);
-      }
+  async detectGameEnd() {
+    if (this.progress >= 100) {
+      // successTimeline().play();
+      // successTimeline().invalidate().play(0);
 
-      if (this.randomPosition < this.y) {
-        this.y -= this.speed;
-      } else {
-        this.y += this.speed;
-      }
+      const successData = { success: true };
 
-      this.fish.style.transform = `translateY(${this.y}px)`;
-      this.randomCountdown -= this.speed;
+     await fetchNui('minigameResult', successData)
+      .then((response) => {
+        resetGame();
+        console.log('Minigame result sent:', response);
+      })
+      .catch((error) => {
+        console.error('Failed to send minigame result:', error);
+      });
+
+      gameOver = true;
     }
   }
 
-  // ------------
-  // Progress bar
-  // ------------
-
-  class ProgressBar {
-    constructor() {
-      this.wrapper = document.querySelector(".progress-bar");
-      this.progressBar = this.wrapper.querySelector(
-        ".progress-gradient-wrapper"
-      );
-      this.progress = 50;
-    }
-
-    reset() {
-      this.progress = 50;
-    }
-
-    drain() {
-      if (this.progress > 0) this.progress -= 0.4;
-      if (this.progress < 1) this.progress = 0;
-    }
-
-    fill() {
-      if (this.progress < 100) this.progress += 0.3;
-    }
-
-    detectGameEnd() {
-      if (this.progress >= 100) {
-        // successTimeline().play();
-        successTimeline().invalidate().play(0);
-
-        gameOver = true;
-      }
-    }
-
-    updateUi() {
-      if (!gameActive) return
-      this.progressBar.style.height = `${this.progress}%`;
-    }
+  updateUi() {
+    if (!gameActive) return;
+    this.progressBar.style.height = `${this.progress}%`;
   }
+}
 
-  // -----------
-  // Application
-  // -----------
+// -----------
+// Application
+// -----------
 
-  const gameBody = document.querySelector(".game-body");
-  let keyPressed = false;
-  const indicator = new Indicator();
-  const progressBar = new ProgressBar();
-  const fish = new Fish();
+const gameBody = document.querySelector(".game-body");
+let keyPressed = false;
+const indicator = new Indicator();
+const progressBar = new ProgressBar();
+const fish = new Fish();
 
-  // ------------
-  // Mouse events
-  // ------------
+// ------------
+// Mouse events
+// ------------
 
-  window.addEventListener("mousedown", () => { if (gameActive) keyPressed = true; });
-  window.addEventListener("mouseup", () => { if (gameActive) keyPressed = false; });
-  window.addEventListener("keydown", () => { if (gameActive) keyPressed = true; });
-  window.addEventListener("keyup", () => { if (gameActive) keyPressed = false; });
+// window.addEventListener("mousedown", () => { if (gameActive) keyPressed = true; });
+// window.addEventListener("mouseup", () => { if (gameActive) keyPressed = false; });
+// window.addEventListener("keydown", () => { if (gameActive) keyPressed = true; });
+// window.addEventListener("keyup", () => { if (gameActive) keyPressed = false; });
 
-  function indicatorActive() {
-    if (!keyPressed) {
-      keyPressed = true;
-      document.body.classList.add("indicator-active");
-    }
-  }
+// ----------
+// Reset game
+// ----------
 
-  function indicatorInactive() {
-    if (keyPressed) {
-      keyPressed = false;
-      document.body.classList.remove("indicator-active");
-    }
-  }
+const niceCatch = document.querySelector(".nice-catch");
+const perfect = document.querySelector(".perfect");
+const successButton = document.querySelector(".success");
+const game = document.querySelector(".game");
+// successButton.addEventListener("click", resetGame);
 
-  // ----------
-  // Reset game
-  // ----------
+function resetGame() {
+  gameActive = false; // Pausa o jogo
+  gameOver = true;
 
-  const niceCatch = document.querySelector(".nice-catch");
-  const perfect = document.querySelector(".perfect");
-  const successButton = document.querySelector(".success");
-  const game = document.querySelector(".game");
-  successButton.addEventListener("click", resetGame);
+  progressBar.reset();
+  fish.resetPosition();
+  
 
-  function resetGame() {
-    gameActive = false;  // Pausa o jogo
-    gameOver = true;
-
-    progressBar.reset();
-    fish.resetPosition();
-
-    successButton.removeAttribute("style");
-    niceCatch.removeAttribute("style");
-    perfect.removeAttribute("style");
-    game.removeAttribute("style");
-
-    gameOver = false;
-    // animationLoop();
-  }
-
-  // ----------------
-  // Success timeline
-  // ----------------
-
-  function successTimeline() {
-    TweenMax.set(".success", { display: "flex" });
-    TweenMax.set(".nice-catch", { y: 50 });
-    TweenMax.set(".perfect", { perspective: 800 });
-    TweenMax.set(".perfect", { transformStyle: "preserve-3d" });
-    TweenMax.set(".perfect", { rotationX: -90 });
-
-    const tl = new TimelineMax({ paused: true })
-      .to(".game", 0.2, { opacity: 0 })
-      .to(".success", 0.5, { ease: Power3.easeOut, opacity: 1 }, "ending")
-      .to(".nice-catch", 0.5, { ease: Power3.easeOut, y: 0 }, "ending")
-      .to(
-        ".perfect",
-        3,
-        { ease: Elastic.easeOut.config(1, 0.3), rotationX: 0 },
-        "+=0.2"
-      );
-
-    return tl;
-  }
-
-  // -------------
-  // Initiate loop
-  // -------------
+  // successButton.removeAttribute("style");
+  // niceCatch.removeAttribute("style");
+  // perfect.removeAttribute("style");
+  // game.removeAttribute("style");
 
   // animationLoop();
+}
+
+// ----------------
+// Success timeline
+// ----------------
+
+// function successTimeline() {
+//   // TweenMax.set(".success", { display: "flex" });
+//   // TweenMax.set(".nice-catch", { y: 50 });
+//   // TweenMax.set(".perfect", { perspective: 800 });
+//   // TweenMax.set(".perfect", { transformStyle: "preserve-3d" });
+//   // TweenMax.set(".perfect", { rotationX: -90 });
+
+//   const tl = new TimelineMax({ paused: true })
+//     .to(".game", 0.2, { opacity: 0 })
+//     .to(".success", 0.5, { ease: Power3.easeOut, opacity: 1 }, "ending")
+//     .to(".nice-catch", 0.5, { ease: Power3.easeOut, y: 0 }, "ending")
+//     .to(
+//       ".perfect",
+//       3,
+//       { ease: Elastic.easeOut.config(1, 0.3), rotationX: 0 },
+//       "+=0.2"
+//     );
+
+//   return tl;
+// }
+
+// -------------
+// Initiate loop
+// -------------
+
+// animationLoop();
 
 // -------
 // Seaweed
 // -------
-
-(function () {
+function initSeaweed() {
   let seaweed = [];
   const canvas = document.querySelector('[data-element="seaweed"]');
   canvas.width = canvas.clientWidth * 2;
   canvas.height = canvas.clientHeight * 2;
   const context = canvas.getContext("2d");
-
-  function animationLoop() {
-    if (!gameActive) return
-    clearCanvas();
-    seaweed.forEach((seaweed) => seaweed.draw());
- }
 
   function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -357,40 +396,31 @@ class Indicator {
             canvas.height + -i * this.segmentSpread
           );
         }
-        // context.arc(Math.sin(this.sin + i) * 10 + 30, this.y + (this.segmentSpread * i), this.radius, 0, 2*Math.PI);
       }
       context.stroke();
-
       this.sin += 0.05;
     }
   }
 
+  // Cria instâncias de Seaweed e as adiciona ao array
   seaweed.push(new Seaweed(6, 8, 25));
   seaweed.push(new Seaweed(8, 10, 35));
   seaweed.push(new Seaweed(4, 8, 45));
 
-  animationLoop();
-})();
+  // Retorna o array de algas para ser controlado no loop principal
+  return { seaweed, clearCanvas };
+}
 
 // -----------------
 // Reel line tension
 // -----------------
 
-(function () {
+function initReelLineTension() {
   let line = null;
   const canvas = document.querySelector('[data-element="reel-line-tension"]');
   canvas.width = canvas.clientWidth * 2;
   canvas.height = canvas.clientHeight * 2;
   const context = canvas.getContext("2d");
-
-  function animationLoop() {
-    if (!gameActive) return
-
-    clearCanvas();
-    line.draw();
-    line.animate();
-
-  }
 
   function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -427,31 +457,22 @@ class Indicator {
     }
   }
 
+  // Cria uma nova linha de tensão
   line = new Line();
-  if (!gameActive) return
-
-  animationLoop();
-})();
+  return { line, clearCanvas };
+}
 
 // -------
 // Bubbles
 // -------
 
-(function () {
+function initBubbles() {
   let bubbles = {};
   let bubblesCreated = 0;
   const canvas = document.querySelector('[data-element="bubbles"]');
   canvas.width = canvas.clientWidth * 2;
   canvas.height = canvas.clientHeight * 2;
   const context = canvas.getContext("2d");
-
-  function animationLoop() {
-    if (!gameActive) return
-
-    clearCanvas();
-    Object.keys(bubbles).forEach((bubble) => bubbles[bubble].draw());
-
-    }
 
   function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -484,6 +505,7 @@ class Indicator {
         2 * Math.PI
       );
       context.stroke();
+
       this.x =
         Math.sin(this.sin) * this.swayDistance +
         this.swayDistance -
@@ -495,12 +517,10 @@ class Indicator {
         delete bubbles[this.index];
       }
 
-      if (this.y < canvas.height * 0.6) {
-        if (!this.childAdded) {
-          bubbles[bubblesCreated] = new Bubble();
-          bubblesCreated++;
-          this.childAdded = true;
-        }
+      if (this.y < canvas.height * 0.6 && !this.childAdded) {
+        bubbles[bubblesCreated] = new Bubble();
+        bubblesCreated++;
+        this.childAdded = true;
       }
     }
   }
@@ -508,63 +528,5 @@ class Indicator {
   bubbles[bubblesCreated] = new Bubble();
   bubblesCreated++;
 
-  animationLoop();
-})();
-
-// ----
-// NUI OLD
-// ----
-
-// window.addEventListener('message', (event) => {
-
-//     if (event.data.action === "hide") {
-//         document.querySelector("body").style.display = "none";
-//         document.body.style.cursor = "default";
-//     }
-
-//     if (event.data.action === 'startMinigame') {
-//         document.querySelector('body').style.display = 'flex';
-//         // document.body.style.cursor = 'none';  // Esconde o cursor
-//         startMinigame();  // Inicia o minigame
-//     }
-// });
-
-
-// async function startMinigame() {
-//     let minigameSuccess = false;
-//     let gameOver = false;
-
-//     // Inicia o loop de animação do minigame
-//     animationLoop();
-
-//     // Cria um timer de 30 segundos para encerrar o minigame automaticamente
-//     const timer = setTimeout(async () => {
-//         if (!gameOver) {
-//             minigameSuccess = false;
-//             await endMinigame(minigameSuccess);
-//         }
-//     }, 30000);  // 30 segundos
-
-//     // Simula o minigame, o qual pode terminar antes dos 30 segundos
-//     setTimeout(async () => {
-//         minigameSuccess = Math.random() > 0.5;  // Randomiza sucesso ou falha
-
-//         if (minigameSuccess) {
-//             clearTimeout(timer);  // Cancela o timer de 30 segundos se o jogo terminar antes
-//             gameOver = true;
-//             await endMinigame(minigameSuccess);
-//         }
-//     }, 5000);  // Minigame simulado dura 5 segundos
-// }
-
-// async function endMinigame(minigameSuccess) {
-//     // Reseta o jogo e oculta o corpo
-//     resetGame();
-//     document.querySelector('body').style.display = 'none';
-//     document.body.style.cursor = 'default';
-
-//     // Envia o resultado de volta ao Lua
-//     await fetchNui("minigameResult", {
-//         success: minigameSuccess
-//     });
-// }
+  return { bubbles, clearCanvas };
+}

@@ -14,7 +14,8 @@ files {
     'web/*.js',
     'web/*.css',
     'web/*.html',
-    'web/assets/*.svg'
+    'web/assets/*.svg',
+    'web/assets/*.png'
 }
 
 shared_scripts {
