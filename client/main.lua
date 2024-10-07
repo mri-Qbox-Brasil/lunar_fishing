@@ -175,30 +175,41 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
 
         SetMouseCursorVisibleInMenus(false)
         
-        SendNUIMessage({
-            action = 'startMinigame'
-        })
-        SetNuiFocus(true, true)
+
+        if Config.MinigameType == 'ox' then
+            local success = lib.skillCheck(fish.skillcheck, { 'e' })
+            p:resolve(success)
+        else
+            SendNUIMessage({
+                action = 'startMinigame'
+            })
+            SetNuiFocus(true, true)       
+         end
+       
 
 
-            RegisterNUICallback('minigameResult', function(data, cb)
-        if p.state == 0 then  -- Só resolve se ainda não foi resolvida
+        RegisterNUICallback('minigameResult', function(data, cb)
+            if p.state == 0 then  -- Só resolve se ainda não foi resolvida
             p:resolve(data.success)
-    ShowNotification('Pescaria concluída com sucesso.', 'success')
-
-        end
-        cb('ok')
-    end)
+            ShowNotification('Pescaria concluída com sucesso.', 'success')
+            end
+            cb('ok')
+        end)
+        
         
 
         CreateThread(function()
-            Wait(8000)  -- Espera 5 segundos, mudar pra 30
+            Wait(20000)
             if p.state == 0 then
-                p:resolve(false)  -- Se o minigame não terminar em 30 segundos, falha
+                p:resolve(false)  -- Se o minigame não terminar em 20 segundos, falha
                 ShowNotification(locale('catch_failed'), 'error')
             end
         end)
+
+       
             local success = Citizen.Await(p)
+ 
+
             
             if timer then
                 ClearTimeout(timer)
@@ -232,10 +243,6 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
         -- end)
     
     end)
-
-  
-    
-    -- local success = Citizen.Await(p)
 
     return Citizen.Await(p)
 end)

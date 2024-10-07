@@ -51,9 +51,6 @@ function animationLoop() {
   progressBar.detectGameEnd();
   indicator.detectCollision(fish);
 
-
-
-
   if (bubblesData) {
     bubblesData.clearCanvas();
     Object.keys(bubblesData.bubbles).forEach((bubble) =>
@@ -91,9 +88,8 @@ async function startMiniGame() {
       gameOver = true;
       await endMinigame();
     }
-  }, 8000); //  TODO 5 segundos mudar para 30
+  }, 20000);
 
-  // Simula o minigame, o qual pode terminar antes dos 30 segundos
   setTimeout(async () => {
     const minigameSuccess = progressBar.detectGameEnd();
 
@@ -101,7 +97,7 @@ async function startMiniGame() {
       clearTimeout(timer);
       await endMinigame(minigameSuccess);
     }
-  }, 8000); // Minigame simulado dura 5 segundos
+  }, 20000);
 }
 
 function endMinigame() {
@@ -128,7 +124,7 @@ class Indicator {
   }
 
   calculateBounds() {
-    this.topBounds = (gameBody.clientHeight * -1) + 48;
+    this.topBounds = gameBody.clientHeight * -1 + 130;
     this.bottomBounds = 0;
   }
   updatePosition() {
@@ -144,7 +140,6 @@ class Indicator {
     if (this.y > this.bottomBounds) {
       this.y = this.bottomBounds;
       this.velocity *= 0.5;
-      // this.velocity *= -1;
     }
 
     // // Limite superior
@@ -170,12 +165,11 @@ class Indicator {
   detectCollision(fish) {
     const indicatorRect = this.indicator.getBoundingClientRect();
     const fishRect = fish.fish.getBoundingClientRect();
-  
+
     if (
       indicatorRect.bottom >= fishRect.top &&
       indicatorRect.top <= fishRect.bottom
     ) {
-      // console.log("Collision detected, filling!");
       progressBar.fill();
       document.body.classList.add("collision");
     } else {
@@ -184,8 +178,6 @@ class Indicator {
       document.body.classList.remove("collision");
     }
   }
-  
-
 }
 
 // ----
@@ -194,7 +186,7 @@ class Indicator {
 
 class Fish {
   constructor() {
-    this.fish = document.querySelector('.fish');
+    this.fish = document.querySelector(".fish");
     this.height = this.fish.clientHeight;
     this.y = 5;
     this.direction = null;
@@ -214,7 +206,7 @@ class Fish {
       this.randomPosition =
         Math.ceil(Math.random() * (gameBody.clientHeight - this.height)) * -1;
       this.randomCountdown = Math.abs(this.y - this.randomPosition);
-      this.speed = Math.abs(Math.random() * (1 - 1) + 1);
+      this.speed = Math.abs(Math.random() * (2 - 1) + 1);
     }
 
     if (this.randomPosition < this.y) {
@@ -244,12 +236,12 @@ class ProgressBar {
   }
 
   drain() {
-    if (this.progress > 0) this.progress -= 0.4;
+    if (this.progress > 0) this.progress -= 0.5;
     if (this.progress < 1) this.progress = 0;
   }
 
   fill() {
-    if (this.progress < 100) this.progress += 0.9; // padrão 0.3
+    if (this.progress < 100) this.progress += 0.3; // padrão 0.3
   }
 
   async detectGameEnd() {
@@ -259,14 +251,14 @@ class ProgressBar {
 
       const successData = { success: true };
 
-     await fetchNui('minigameResult', successData)
-      .then((response) => {
-        resetGame();
-        console.log('Minigame result sent:', response);
-      })
-      .catch((error) => {
-        console.error('Failed to send minigame result:', error);
-      });
+      await fetchNui("minigameResult", successData)
+        .then((response) => {
+          endMinigame();
+          console.log("Minigame result sent:", response);
+        })
+        .catch((error) => {
+          console.error("Failed to send minigame result:", error);
+        });
 
       gameOver = true;
     }
@@ -288,15 +280,6 @@ const indicator = new Indicator();
 const progressBar = new ProgressBar();
 const fish = new Fish();
 
-// ------------
-// Mouse events
-// ------------
-
-// window.addEventListener("mousedown", () => { if (gameActive) keyPressed = true; });
-// window.addEventListener("mouseup", () => { if (gameActive) keyPressed = false; });
-// window.addEventListener("keydown", () => { if (gameActive) keyPressed = true; });
-// window.addEventListener("keyup", () => { if (gameActive) keyPressed = false; });
-
 // ----------
 // Reset game
 // ----------
@@ -313,7 +296,6 @@ function resetGame() {
 
   progressBar.reset();
   fish.resetPosition();
-  
 
   // successButton.removeAttribute("style");
   // niceCatch.removeAttribute("style");

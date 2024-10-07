@@ -177,9 +177,9 @@ body {
 
 .indicator {
   /* width: 34px; */
-  height: 25%;
+  height: 130px;
   position: absolute;
-  top: calc(100% - 25%);
+  top: calc(100% - 130px);
   left: 3%;
   opacity: 0.8;
   z-index: 30;
