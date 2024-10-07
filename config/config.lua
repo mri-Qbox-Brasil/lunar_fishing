@@ -1,11 +1,12 @@
 Config = {}
 
+Config.MinigameType = 'ghds' -- opções de minigame: ghds | ox
 Config.progressPerCatch = 5 -- The progress per one fish caught
 
 ---@class Fish
 ---@field price integer | { min: integer, max: integer }
 ---@field chance integer Percentage chance
----@field skillcheck SkillCheckDifficulity }
+---@field skillcheck SkillCheckDifficulity
 
 ---@type table<string, Fish>
 Config.fish = {

@@ -161,7 +161,7 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
 
         TaskPlayAnim(cache.ped, 'amb@world_human_stand_fishing@idle_a', 'idle_c', 3.0, 3.0, -1, 11, 0, false, false, false)
 
-        if not wait(math.random(zone.waitTime.min, zone.waitTime.max) / bait.waitDivisor * 1000) then return end
+        -- if not wait(math.random(zone.waitTime.min, zone.waitTime.max) / bait.waitDivisor * 1000) then return end
 
         ShowNotification(locale('felt_bite'), 'warn')
         HideUI()
@@ -173,25 +173,76 @@ lib.callback.register('lunar_fishing:itemUsed', function(bait, fish)
 
         if not wait(math.random(2000, 4000)) then return end
 
-        local success = lib.skillCheck(fish.skillcheck, { 'e' })
+        SetMouseCursorVisibleInMenus(false)
+        
 
-        if not success then
-            ShowNotification(locale('catch_failed'), 'error')
-        end
+        if Config.MinigameType == 'ox' then
+            local success = lib.skillCheck(fish.skillcheck, { 'e' })
+            p:resolve(success)
+        else
+            SendNUIMessage({
+                action = 'startMinigame'
+            })
+            SetNuiFocus(true, true)       
+         end
+       
 
-        p:resolve(success)
+
+        RegisterNUICallback('minigameResult', function(data, cb)
+            if p.state == 0 then  -- Só resolve se ainda não foi resolvida
+            p:resolve(data.success)
+            ShowNotification('Pescaria concluída com sucesso.', 'success')
+            end
+            cb('ok')
+        end)
+        
+        
+
+        CreateThread(function()
+            Wait(20000)
+            if p.state == 0 then
+                p:resolve(false)  -- Se o minigame não terminar em 20 segundos, falha
+                ShowNotification(locale('catch_failed'), 'error')
+            end
+        end)
+
+       
+            local success = Citizen.Await(p)
+ 
+
+            
+            if timer then
+                ClearTimeout(timer)
+            end
+    
+            if interval then
+                ClearInterval(interval)
+                interval = nil
+            end
+    
+            DeleteEntity(object)
+            ClearPedTasks(cache.ped)
+            setCanRagdoll(true)
+            SetNuiFocus(false, false)
+
+            
+           
+            return success
+
+            
+
+        -- RegisterNUICallback('minigameResult', function(data, cb)
+        --     cb('ok')
+        --     SendNUIMessage({
+        --         action = 'hide'
+        --     })
+        --     if not success then
+        --         ShowNotification(locale('catch_failed'), 'error')
+        --     end
+        --     p:resolve(success)
+        -- end)
+    
     end)
 
-    local success = Citizen.Await(p)
-
-    if interval then
-        ClearInterval(interval)
-        interval = nil
-    end
-
-    DeleteEntity(object)
-    ClearPedTasks(cache.ped)
-    setCanRagdoll(true)
-
-    return success
+    return Citizen.Await(p)
 end)
