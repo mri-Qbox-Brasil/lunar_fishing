@@ -98,8 +98,7 @@ for _, rod in ipairs(Config.fishingRods) do
             busy[source] = nil
             return
         end
-            
-        player:removeItem(bait.name, 1)
+
         local success = lib.callback.await('lunar_fishing:itemUsed', source, bait, Config.fish[fishName])
 
         if success then
@@ -108,11 +107,13 @@ for _, rod in ipairs(Config.fishingRods) do
             exports["cw-rep"]:updateSkill(source, 'fishing', Config.progressPerCatch)
             print("Log:", source, player, Config.progressPerCatch)
             Utils.logToDiscord(source, player, ('Caught a %s.'):format(Utils.getItemLabel(fishName)))
+            player:removeItem(bait.name, 1)
         elseif math.random(100) <= rod.breakChance then
             player:removeItem(rod.name, 1)
             TriggerClientEvent('lunar_fishing:showNotification', source, locale('rod_broke'), 'error')
+        elseif not success then
+            player:removeItem(bait.name, 1)
         end
-
         busy[source] = nil
     end)
 end

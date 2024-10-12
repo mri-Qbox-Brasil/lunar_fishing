@@ -72,6 +72,7 @@ function animationLoop() {
 }
 
 async function startMiniGame() {
+  resetGame();
   gameActive = true;
   gameOver = false;
 
@@ -83,28 +84,44 @@ async function startMiniGame() {
   bubblesData = initBubbles();
   animationLoop();
 
-  const timer = setTimeout(async () => {
-    if (!gameOver) {
-      gameOver = true;
+  let timeLeft = 10; // Tempo inicial
+  const timerDisplay = document.getElementById("timer-display");
+  timerDisplay.textContent = timeLeft;
+
+  const countdown = setInterval(async () => {
+    timeLeft -= 1;
+    timerDisplay.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      timeLeft = 0;
+      clearInterval(countdown); // Para o contador ao atingir 0
       await endMinigame();
     }
-  }, 20000);
+  }, 1000);
+  gameTimeouts.push(countdown);
 
-  setTimeout(async () => {
+  const successTimeout = setTimeout(async () => {
     const minigameSuccess = progressBar.detectGameEnd();
-
-    if (minigameSuccess) {
-      clearTimeout(timer);
+    if (minigameSuccess || gameOver) {
       await endMinigame(minigameSuccess);
     }
-  }, 20000);
+  }, 10000);
+
+  gameTimeouts.push(successTimeout);
 }
 
 function endMinigame() {
+  gameActive = false;
+  gameOver = true;
+
+  gameTimeouts.forEach(clearTimeout);
+  gameTimeouts = [];
   resetGame();
   document.querySelector("body").style.display = "none";
   document.body.style.cursor = "default";
 }
+
+let gameTimeouts = [];
 
 // ---------
 // Indicator
@@ -157,9 +174,6 @@ class Indicator {
 
     // // Atualiza a posição do indicator na tela
     this.indicator.style.transform = `translateY(${this.y}px)`;
-
-    // using top property
-    // this.indicator.style.top = `${this.y}px`;  // Use top em vez de transform
   }
 
   detectCollision(fish) {
@@ -241,7 +255,7 @@ class ProgressBar {
   }
 
   fill() {
-    if (this.progress < 100) this.progress += 0.3; // padrão 0.3
+    if (this.progress < 100) this.progress += 0.2; // padrão 0.3
   }
 
   async detectGameEnd() {
@@ -254,7 +268,6 @@ class ProgressBar {
       await fetchNui("minigameResult", successData)
         .then((response) => {
           endMinigame();
-          console.log("Minigame result sent:", response);
         })
         .catch((error) => {
           console.error("Failed to send minigame result:", error);
