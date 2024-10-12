@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Sixtyfour+Convergence&display=swap');
+
 /* @media (max-width: 768px) {
   .game-body {
     width: 80%;
@@ -41,6 +43,18 @@ body {
   background: none;
   align-items: center;
   justify-content: center;
+}
+
+#timer-display {
+  position: absolute;
+  top: 60vh;
+  right: 43.3vw;
+  font-size: 2rem;
+  color: rgba(243, 219, 4, 0.678);
+
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-family: "Sixtyfour Convergence", sans-serif;
 }
 
 .game {
