@@ -1,3 +1,4 @@
+-- Resource Metadata
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
@@ -6,16 +7,8 @@ author 'Lunar Scripts'
 description 'Advanced Fishing'
 version '1.0.1'
 
-ui_page {
-	'web/index.html',
-}
 files {
-    'locales/*.json',
-    'web/*.js',
-    'web/*.css',
-    'web/*.html',
-    'web/assets/*.svg',
-    'web/assets/*.png'
+    'locales/*.json'
 }
 
 shared_scripts {

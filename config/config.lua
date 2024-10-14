@@ -1,12 +1,11 @@
 Config = {}
 
-Config.MinigameType = 'ghds' -- opções de minigame: ghds | ox
 Config.progressPerCatch = 5 -- The progress per one fish caught
 
 ---@class Fish
 ---@field price integer | { min: integer, max: integer }
 ---@field chance integer Percentage chance
----@field skillcheck SkillCheckDifficulity
+---@field skillcheck SkillCheckDifficulity }
 
 ---@type table<string, Fish>
 Config.fish = {
@@ -61,7 +60,7 @@ Config.baits = {
 Config.fishingZones = {
     {
         blip = {
-            name = '[PESCA] Recife de Coral',
+            name = 'Coral Reef',
             sprite = 317,
             color = 24,
             scale = 0.6
@@ -79,7 +78,7 @@ Config.fishingZones = {
     },
     {
         blip = {
-            name = '[PESCA] Águas Escuras',
+            name = 'Deep Waters',
             sprite = 317,
             color = 29,
             scale = 0.6
@@ -96,7 +95,7 @@ Config.fishingZones = {
     },
     {
         blip = {
-            name = '[PESCA] Pântano',
+            name = 'Swamp',
             sprite = 317,
             color = 56,
             scale = 0.6
