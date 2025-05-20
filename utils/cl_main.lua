@@ -34,7 +34,7 @@ function Utils.createPed(coords, configPed, options)
     if not IsModelValid(configPed.model) then
         error('Invalid ped model: %s', configPed.model)
     end
-    print(coords, configPed.model, options)
+    -- print(coords, configPed.model, options)
     -- Convert action to qtarget
     if options then
         for _, option in pairs(options) do
@@ -80,7 +80,7 @@ function Utils.createPed(coords, configPed, options)
                     label = "Olá, me chamo "..playerName.. "😊",
                     shouldClose = false,
                     action = function()
-                        exports['rep-talkNPC']:changeDialog( configPed.message, 
+                        exports['rep-talkNPC']:changeDialog( configPed.message,
                             {
                                 [1] = {
                                     label = "Entendi!",
@@ -206,7 +206,7 @@ end
 ---@param data KeybindData
 ---@return Keybind
 function Utils.addKeybind(data)
-    local bind = lib.addKeybind(data --[[@as KeybindProps]]) 
+    local bind = lib.addKeybind(data --[[@as KeybindProps]])
 
     local listeners = {}
 

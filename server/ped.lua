@@ -10,9 +10,9 @@ lib.callback.register('lunar_fishing:sellFish', function(source, fishName, amoun
     if not item or amount <= 0 then return end
 
     local player = Framework.getPlayerFromId(source)
-    
+
     if not player then return end
-    
+
     if player:getItemCount(fishName) >= amount then
         SetTimeout(3000, function()
             if player:getItemCount(fishName) < amount then return end
@@ -42,7 +42,7 @@ lib.callback.register('lunar_fishing:buy', function(source, data, amount)
     local player = Framework.getPlayerFromId(source)
 
     local playerSkills = exports["cw-rep"]:fetchSkills(source)
-    print('Player with source',source, ' fishing skills:',playerSkills.fishing)
+    -- print('Player with source',source, ' fishing skills:',playerSkills.fishing)
 
     if not player
     -- or GetPlayerLevel(player) < item.minLevel then return end
@@ -55,7 +55,7 @@ lib.callback.register('lunar_fishing:buy', function(source, data, amount)
             player:removeAccountMoney(Config.ped.buyAccount, price)
             player:addItem(item.name, amount)
         end)
-        
+
         return true
     end
 

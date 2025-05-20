@@ -63,7 +63,7 @@ lib.callback.register('lunar_fishing:getLevel', function(source)
     -- return levels[identifier]
 
     local playerSkills = exports["cw-rep"]:fetchSkills(source)
-    print('getLevel getLevel getLevel',source, ' fishing skills:',playerSkills.fishing)
+    -- print('getLevel getLevel getLevel',source, ' fishing skills:',playerSkills.fishing)
 
     return playerSkills.fishing
 end)
